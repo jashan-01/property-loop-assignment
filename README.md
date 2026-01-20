@@ -1,97 +1,71 @@
 # Financial Data Chatbot
 
-A chatbot that answers questions about holdings and trades data using natural language.
+Chat with your portfolio data. Ask questions in plain English, get answers from your holdings and trades.
 
-## Features
+Built with LangChain + Streamlit.
 
-- Query holdings data (portfolio positions, P&L, market values)
-- Query trades data (buy/sell transactions, volumes)
-- Natural language interface powered by GPT-4
-- Web-based chat UI using Streamlit
+## What it does
 
-## Prerequisites
+You can ask things like:
+- "What's my total portfolio value?"
+- "Show me all trades from last month"
+- "Which fund has the highest P&L?"
+- "List all buy transactions for HoldCo 1"
 
-- Python 3.10+
-- OpenAI API key
+The agent reads from two CSV files (holdings + trades) and uses GPT-4 to figure out how to answer your question.
 
-## Installation
+## Setup
 
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+# clone and enter the project
+git clone <repo-url>
 cd property_loop
-```
 
-2. Create virtual environment:
-```bash
+# create venv and install deps
 python -m venv .venv
 source .venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
 pip install -r requirements.txt
+
+# add your openai key
+echo "OPENAI_API_KEY=sk-..." > .env
 ```
 
-4. Configure API key:
-```bash
-cp .env.example .env
-```
-Edit `.env` and add your OpenAI API key.
-
-## Running Locally
+## Run
 
 ```bash
 streamlit run app.py
 ```
 
-The application will open at http://localhost:8501
+Opens at http://localhost:8501
 
-## Project Structure
+## Project layout
 
 ```
-property_loop/
-├── data/
-│   ├── holdings.csv
-│   └── trades.csv
+├── app.py              # streamlit frontend
 ├── src/
-│   ├── __init__.py
-│   ├── data_loader.py
-│   ├── prompts.py
-│   └── agent.py
-├── app.py
-├── requirements.txt
-├── .env.example
-├── .gitignore
-└── README.md
+│   ├── agent.py        # langchain agent setup
+│   ├── data_loader.py  # loads the csvs
+│   └── prompts.py      # system prompts
+├── data/
+│   ├── holdings.csv    # ~1k rows of portfolio positions
+│   └── trades.csv      # ~650 rows of transactions
+└── requirements.txt
 ```
 
-## Data Description
+## About the data
 
-### Holdings Table (1,023 rows)
-Current portfolio positions with columns for fund names, quantities, prices, market values, and profit/loss metrics (daily, monthly, quarterly, yearly).
+**Holdings** - current positions with market values, quantities, and P&L (daily/monthly/quarterly/yearly). Funds include Garfield, Heather, MNC Inv, Ytum, etc.
 
-Fund names: Garfield, Heather, MNC Inv, Ytum, Platpot, Opium, NorthPoint, etc.
+**Trades** - historical buy/sell records with prices, quantities, and counterparties. Funds include HoldCo 1, ClientA, UNC Investment Fund, etc.
 
-### Trades Table (650 rows)
-Historical buy/sell transactions with columns for trade type, quantities, prices, principal values, and counterparties.
+Note: the two tables use different naming for funds. They can be joined on `SecurityId` or `CustodianName`, but not on fund names directly.
 
-Fund names: HoldCo 1, HoldCo 3, ClientA, UNC Investment Fund, Redfield Accu-Fund, etc.
+## Deploy to Streamlit Cloud
 
-### Important Notes
-- Holdings and Trades have different fund naming conventions
-- Tables can be joined on: SecurityId, CustodianName
-- Tables cannot be joined on fund/portfolio names
-
-## Deployment
-
-### Streamlit Cloud
-
-1. Push code to GitHub
-2. Go to https://streamlit.io/cloud
-3. Connect your GitHub repository
-4. Add `OPENAI_API_KEY` in Secrets
-5. Deploy
+1. Push to GitHub
+2. Connect repo at streamlit.io/cloud
+3. Add `OPENAI_API_KEY` to Secrets
+4. Done
 
 ## License
 
