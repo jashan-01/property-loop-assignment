@@ -6,7 +6,6 @@ from langchain_openai import ChatOpenAI
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain.tools import tool
 from langchain import hub
-from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.base import BaseCallbackHandler
 from src.data_loader import load_data
 from src.prompts import SYSTEM_PROMPT, SUFFIX
@@ -44,25 +43,16 @@ class StreamingCallbackHandler(BaseCallbackHandler):
 
 def create_agent(memory=None):
     """
-    Create a modern LangChain agent using ReAct approach.
-    Supports streaming and conversation memory.
+    Create a LangChain ReAct agent for financial data analysis.
     """
     holdings_df, trades_df = load_data()
-    
-    # Create memory if not provided
-    if memory is None:
-        memory = ConversationBufferWindowMemory(
-            memory_key="chat_history",
-            k=5,  # Remember last 5 exchanges
-            return_messages=True
-        )
     
     llm = ChatOpenAI(
         model="gpt-4o-mini",
         temperature=0,
         api_key=os.getenv("OPENAI_API_KEY"),
         timeout=30,
-        streaming=True  # Enable streaming
+        streaming=True
     )
     
     # Create DataFrame analysis tools
@@ -135,24 +125,23 @@ def create_agent(memory=None):
     # Create the agent
     agent = create_react_agent(llm, tools, prompt)
     
-    # Create executor with optimized settings for speed
+    # Create executor with optimized settings
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
         verbose=True,
         handle_parsing_errors=True,
-        max_iterations=5,  # Reduced for faster failure
-        max_execution_time=60,  # 60s timeout
-        early_stopping_method="force",
-        memory=memory
+        max_iterations=5,
+        max_execution_time=60,
+        early_stopping_method="force"
     )
     
-    return agent_executor, memory
+    return agent_executor, None
 
 
 def query_agent(agent, question: str) -> str:
     """
-    Query the agent with better error handling and logging (non-streaming).
+    Query the agent with better error handling and logging.
     """
     try:
         logger.info(f"Processing question: {question}")
@@ -188,9 +177,7 @@ def query_agent_streaming(agent, question: str) -> Generator[str, None, None]:
             # The final output comes in the 'output' key
             if "output" in chunk:
                 output = chunk["output"]
-                # Yield the new content
                 if output:
-                    # For streaming, yield character by character for smooth effect
                     for char in output:
                         yield char
                         full_response += char

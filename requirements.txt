@@ -1,7 +1,9 @@
 streamlit==1.40.0
-langchain==0.3.14
-langchain-openai==0.2.14
-langchain-experimental==0.3.4
+langchain>=0.3.14
+langchain-openai>=0.3.19
+langchain-core>=0.3.63,<0.4.0
+langsmith>=0.2.11,<0.3
 pandas==2.2.3
 python-dotenv==1.0.1
 tabulate==0.9.0
+langchainhub
